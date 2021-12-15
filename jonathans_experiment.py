@@ -90,6 +90,7 @@ def prepare_experiment(
     traj_lens, returns = np.array(traj_lens), np.array(returns)
 
     # used for input normalization
+    # not sure why we need so much normalization
     states = np.concatenate(states, axis=0)
     state_mean, state_std = np.mean(states, axis=0), np.std(states, axis=0) + 1e-6
     num_timesteps = sum(traj_lens)
@@ -150,9 +151,11 @@ def prepare_experiment(
 
             # not explained here why we take an additional rtg
             rtg.append(discount_cumsum(traj['rewards'][si:], gamma=1.)[:s[-1].shape[1] + 1].reshape(1, -1, 1))
+#             print('bs rtg', rtg[i].shape)
             if rtg[-1].shape[1] <= s[-1].shape[1]:
                 rtg[-1] = np.concatenate([rtg[-1], np.zeros((1, 1, 1))], axis=1)
 
+#             print('bs rtg 2', rtg[i].shape)
 
             # padding and state + reward normalization
             tlen = s[-1].shape[1]
@@ -187,7 +190,17 @@ def prepare_experiment(
     # Code above this was taken from the github repo for the paper.
     # All we need is the get_batch function, which provides the data we need to feed into our model
 
-    return get_batch, env, max_ep_len, scale, env_target
+    # bb = get_batch(2)
+    # print(bb[-1].shape)
+    # print(type(bb))
+    # print(bb[-2])
+    #
+    # s, a, r, d, rtg, timesteps, mask = get_batch(2)
+    #
+    # dta = DecisionTransformerAgent(env)
+    # dta.offline_train(s, a, r, d, rtg, timesteps, mask)
+
+    return get_batch, env, max_ep_len, scale, env_target, state_mean, state_std
 
 
 if __name__ == '__main__':
@@ -228,7 +241,7 @@ if __name__ == '__main__':
     mode = variant.get('mode', 'normal')
     
     # prepare the experiment using the dataset
-    new_batch, env, max_ep_len, scale, env_target = prepare_experiment('gym-experiment', device=device, env_name=env_name, 
+    new_batch, env, max_ep_len, scale, env_target, state_mean, state_std = prepare_experiment('gym-experiment', device=device, env_name=env_name, 
                                                                   dataset=dataset, model_type=model_type, mode=mode, 
                                                                   K=K, pct_traj=pct_traj)
     
@@ -246,8 +259,9 @@ if __name__ == '__main__':
     # create a DT agent
     dta = DecisionTransformerAgent(env, hidden_dim=hidden_dim, lr=lr, act_f=act_f, n_layer=n_layer,
                                    n_head=n_head, sequence_length=K, weight_decay=weight_decay, warmup_steps=warmup_steps,
-                                   warmup_method=1, scale=scale, target_return=env_target, device=device)
-
+                                   warmup_method=1, scale=scale, target_return=env_target, device=device, 
+                                   state_mean=state_mean, state_std=state_std, max_ep_len=max_ep_len)
+#     dta = DecisionTransformerAgent(env, scale=scale, target_return=env_target, warmup_steps=100, warmup_method=1, lr=0.001)
     batch_size = variant['batch_size']
     num_steps_per_iter = variant['num_steps_per_iter']
     per_batch = variant['per_batch']
