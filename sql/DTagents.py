@@ -1,6 +1,6 @@
 from RLagents import Agent
 from torch.optim import AdamW
-from models import *
+from models.models import *
 import torch
 import numpy as np
 # from decision_transformer.evaluation.evaluate_episodes import *
@@ -11,9 +11,9 @@ class DecisionTransformerAgent(Agent):
                  target_return=3600, device='cpu', grad_norm_clip=0.25, state_mean=0.0, state_std=1.0, max_ep_len=1000):
         Agent.__init__(self, env)
 
-#         print('id', self.input_dim)
+#         print('id', self.state_dim)
         # create model
-        self.model = DecisionTransformer(hidden_dim, 5000, self.input_dim, self.output_dim, act_f, n_layer, n_head)
+        self.model = DecisionTransformer(hidden_dim, 5000, self.state_dim, self.action_dim, act_f, n_layer, n_head)
 
         # attach model to optim. Paper mentions they used AdamW with LR of 0.001
         self.optimizer = AdamW(self.model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -103,7 +103,7 @@ class DecisionTransformerAgent(Agent):
                 # we want to input tensors here
                 R = torch.tensor([[self.target_return/self.scale]], dtype=self.dtype, device=self.device)
                 s = torch.tensor([self.env.reset()], dtype=self.dtype, device=self.device)
-                a = torch.zeros((0, self.output_dim), dtype=self.dtype, device=self.device)
+                a = torch.zeros((0, self.action_dim), dtype=self.dtype, device=self.device)
                 t = torch.tensor([1], dtype=self.itype, device=self.device)
                 sum_r = 0
                 done = False
@@ -111,8 +111,8 @@ class DecisionTransformerAgent(Agent):
                 while not done:
                     # sample next action. pad action with zeros for next action?
     #                 print('R', R)
-    #                 print('A', torch.cat((a, torch.zeros((1, self.output_dim), device=self.device))))
-                    action = self.model(R, s, torch.cat((a, torch.zeros((1, self.output_dim), device=self.device))), t)[-1]
+    #                 print('A', torch.cat((a, torch.zeros((1, self.action_dim), device=self.device))))
+                    action = self.model(R, s, torch.cat((a, torch.zeros((1, self.action_dim), device=self.device))), t)[-1]
                     s_prime, r, done, _ = self.env.step(action.detach().numpy())
 
                     # append new tokens
@@ -146,8 +146,8 @@ class DecisionTransformerAgent(Agent):
                         
                         ret, length = evaluate_episode_rtg(
                             self.env,
-                            self.input_dim,
-                            self.output_dim,
+                            self.state_dim,
+                            self.action_dim,
                             self.model,
                             max_ep_len=self.max_ep_len,
                             scale=self.scale,
