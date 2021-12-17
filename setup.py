@@ -11,6 +11,8 @@ setup(
         'torch',
         'numpy',
         'transformers',
-        'gym'
+        'gym',
+        'matplotlib',
+        'mujoco-py<2.2,>=2.1'
     ]
 )

@@ -1,6 +1,6 @@
-from RLagents import Agent
+from sql.RLagents import Agent
 from torch.optim import AdamW
-from models.models import *
+from sql.models.models import *
 import torch
 import numpy as np
 # from decision_transformer.evaluation.evaluate_episodes import *
