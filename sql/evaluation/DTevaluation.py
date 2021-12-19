@@ -57,10 +57,11 @@ class DT_Evaluater(Evaluater):
 
                 l_per_eps[i] = length
             #         , R, s, a, t
-            print('mean return', r_per_eps.mean())
-            print('std returns', r_per_eps.std())
-            print('mean lengths', l_per_eps.mean())
-            print('std lengths', l_per_eps.std())
+            # print('mean return', r_per_eps.mean())
+            # print('std returns', r_per_eps.std())
+            # print('mean lengths', l_per_eps.mean())
+            # print('std lengths', l_per_eps.std())
+            self.record(r_per_eps, l_per_eps)
         return r_per_eps, l_per_eps
     
 
@@ -100,16 +101,20 @@ class BM_Evaluater(Evaluater):
                         
                     returns.append(ret)
                     lengths.append(length)
-                return {
-                    f'target_{target_rew}_return_mean': np.mean(returns),
-                    f'target_{target_rew}_return_std': np.std(returns),
-                    f'target_{target_rew}_length_mean': np.mean(lengths),
-                    f'target_{target_rew}_length_std': np.std(lengths),
-                }
+                return np.array(returns), np.array(lengths)
+                # {
+                #     # f'target_{target_rew}_return_mean': np.mean(returns),
+                #     # f'target_{target_rew}_return_std': np.std(returns),
+                #     # f'target_{target_rew}_length_mean': np.mean(lengths),
+                #     # f'target_{target_rew}_length_std': np.std(lengths),
+                    
+                # }
             return fn
         
         eval_fn = eval_episodes(target_return)
-        return eval_fn(model)
+        out = eval_fn(model)
+        self.record(out)
+        return out
 
 
     # copied from dt evaluation
