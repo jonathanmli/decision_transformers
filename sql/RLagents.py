@@ -15,10 +15,11 @@ from gym.spaces import Discrete, Box
 
 class Agent:
     '''
-    Abstract agent class that interfaces with gym env.
-    Also provides handy functions for recording and plotting rewards
+    Abstract agent class that interfaces with gym env and interfaces between various components.
+    Also provides handy functions for recording and plotting rewards.
+    offline_extract(Z, K): returns Z batches of sequences of K length
     '''
-    def __init__(self, env):
+    def __init__(self, env, offline_extract=None):
         self.env = env
         # print(env.observation_space.shape)
         self.state_dim = np.prod(env.observation_space.shape)
@@ -28,6 +29,7 @@ class Agent:
             # np.empty([])
 
         self.n_episodes = 0
+        self.offline_extract = offline_extract
 
     def observe(self, state):
         return np.reshape(state, self.input_dim)
@@ -74,12 +76,19 @@ class Agent:
         """
         pass
 
+    def evaluate(self, n_eps):
+        """
+        Online evaluation by interacting with self.env
+        """
+        pass
+
+
 
 class ANNAgent(Agent):
     '''
-    Deep RL agent with a model, optimizer, loss, and scheduler attached
+    Deep RL agent with a model, optimizer, loss, trainer, evaluater, and scheduler attached
     '''
-    def __init__(self, env, model, optimizer, loss_fn, scheduler=None):
+    def __init__(self, env, model, optimizer, loss_fn, trainer, evaluater, scheduler=None):
         Agent.__init__(self, env)
         self.model = model
         self.optimizer = optimizer
