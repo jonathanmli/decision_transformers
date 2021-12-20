@@ -5,7 +5,7 @@ import torch
 import numpy as np
 from evaluation.DTevaluation import DT_Evaluater, BM_Evaluater
 from training.DTtrainer import DT_Trainer
-from jonathans_experiment import prepare_experiment
+from env.dataset_prepare import prepare_experiment
 # from decision_transformer.evaluation.evaluate_episodes import *
 
 class DecisionTransformerAgent(Agent):
@@ -36,20 +36,22 @@ class DecisionTransformerAgent(Agent):
         '''
         All experimental parameters should be arguments agent here
         '''
+        # check if cuda
+        self.on_cuda = torch.cuda.is_available()
+        if self.on_cuda:
+            device='cuda'
+        else:
+            device='cpu'
+
         # get variables from dataset
-        batch_sampler, env, max_ep_len, scale, env_target, state_mean, state_std = prepare_experiment('gym-experiment', device=self.device, env_name=env_name, dataset=dataset, mode=mode, K=sequence_length, pct_traj=pct_traj)
+        batch_sampler, env, max_ep_len, scale, env_target, state_mean, state_std = prepare_experiment('gym-experiment', device=device, env_name=env_name, dataset=dataset, mode=mode, K=sequence_length, pct_traj=pct_traj)
 
         Agent.__init__(self, env)
-
-        self.on_cuda = torch.cuda.is_available()
-
+        
         # attach model
-        self.model = DecisionTransformer(hidden_dim, 5000, self.state_dim, self.action_dim, act_f, n_layer, n_head)
+        self.model = DecisionTransformer(hidden_dim, 5000, self.state_dim, self.action_dim, act_f, n_layer, n_head, device=device, sequence_length=sequence_length)
         if self.on_cuda:
             self.model=self.model.cuda()
-            device = 'cuda'
-        else:
-            device = 'cpu'
 
         # attach optimizer. Paper mentions they used AdamW with LR of 0.001
         self.optimizer = AdamW(self.model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -64,6 +66,8 @@ class DecisionTransformerAgent(Agent):
             # we might get better results if we used warmup from attention is all you need paper
             self.scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer,
                                                                lr_lambda=lambda x: warmup_steps**(0.5) * min((x+1)**(-0.5), (x + 1) * (warmup_steps)**(-1.5)))
+        
+        # some parameters
         self.sequence_length = sequence_length
         self.dtype = torch.float
         self.itype = torch.int
@@ -74,6 +78,7 @@ class DecisionTransformerAgent(Agent):
         self.state_mean = state_mean
         self.state_std = state_std
         self.max_ep_len = max_ep_len
+        self.mode = mode
 
         # attach sampler
         self.batch_sampler = batch_sampler
@@ -82,7 +87,7 @@ class DecisionTransformerAgent(Agent):
         self.trainer = DT_Trainer(self.model, self.optimizer, self.scheduler, batch_sampler, batch_size=batch_size, grad_norm_clip=grad_norm_clip)
 
         # attach evaluater
-        self.evaluater = BM_Evaluater()
+        self.set_evaluater(evaluater=BM_Evaluater)
  
 
     def train(self, n_batches):
@@ -91,6 +96,9 @@ class DecisionTransformerAgent(Agent):
     def evaluate(self, episodes=100, normalized=False, **kwargs):
         self.evaluater.evaluate(self.env, self.model)
         self.evaluater.print_summary()
+    
+    def set_evaluater(self, evaluater=DT_Evaluater):
+        self.evaluater = evaluater(dtype=self.dtype, itype=self.itype, sequence_length=self.sequence_length, target_return=self.target_return, max_ep_len=self.max_ep_len, scale=self.scale, device=self.device, state_mean=self.state_mean, state_std=self.state_std, mode=self.mode)
         
     
     

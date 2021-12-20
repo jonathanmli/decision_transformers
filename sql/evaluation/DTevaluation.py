@@ -2,14 +2,42 @@ from evaluation.RLevaluation import Evaluater
 import torch
 import numpy as np
 
-class DT_Evaluater(Evaluater):
-    def _evaluate(self, env, model, dtype=torch.float, itype=torch.int, normalized=False, sequence_length = 20, n_eps = 100, target_return=3600, max_ep_len=1000, scale=1000, device='cpu', state_mean=None, state_std=None, mode='normal'):
+class sql_Evaluater(Evaluater):
+    def __init__(self, 
+            dtype=torch.float, 
+            itype=torch.int, 
+            normalized=False, 
+            sequence_length = 20, 
+            target_return=3600, 
+            max_ep_len=1000, 
+            scale=1000, 
+            device='cpu', 
+            state_mean=None, 
+            state_std=None, 
+            mode='normal'):
+
+        super().__init__()
+        self.state_mean = state_mean
+        self.state_std = state_std
+        self.device = device
+        self.mode=mode
+        self.sequence_length=sequence_length
+        self.target_return=target_return
+        self.max_ep_len=max_ep_len
+        self.scale=scale
+        self.dtype=dtype
+        self.itype=itype
+        self.normalized=normalized
+
+class DT_Evaluater(sql_Evaluater):
+
+    def _evaluate(self, env, model, n_eps = 100):
         
         state_dim = np.prod(env.observation_space.shape)
         action_dim = env.action_space.shape[0]
-        if state_mean is None:
+        if self.state_mean is None:
             state_mean = np.zeros(state_dim)
-        if state_std is None:
+        if self.state_std is None:
             state_std = np.array([1.0])
 
         
@@ -20,10 +48,10 @@ class DT_Evaluater(Evaluater):
         for i in range(n_eps):
 #                 print('eps', i)
             # we want to input tensors here
-            R = torch.tensor([[target_return/scale]], dtype=dtype, device=device)
-            s = torch.tensor([env.reset()], dtype=dtype, device=device)
-            a = torch.zeros((0, action_dim), dtype=dtype, device=device)
-            t = torch.tensor([1], dtype=itype, device=device)
+            R = torch.tensor([[self.target_return/self.scale]], dtype=self.dtype, device=self.device)
+            s = torch.tensor([env.reset()], dtype=self.dtype, device=self.device)
+            a = torch.zeros((0, action_dim), dtype=self.dtype, device=self.device)
+            t = torch.tensor([1], dtype=self.itype, device=self.device)
             sum_r = 0
             done = False
             length = 0
@@ -31,25 +59,25 @@ class DT_Evaluater(Evaluater):
                 # sample next action. pad action with zeros for next action?
 #                 print('R', R)
 #                 print('A', torch.cat((a, torch.zeros((1, action_dim), device=device))))
-                action = model(R, s, torch.cat((a, torch.zeros((1, action_dim), device=device))), t)[-1]
+                action = model.get_action(s, torch.cat((a, torch.zeros((1, action_dim), device=self.device))), None, R, t)
+                # model(R, s, torch.cat((a, torch.zeros((1, action_dim), device=self.device))), t)[-1]
                 # print('t sh', t.shape)
                 # print('R sh', R.shape)
-                s_prime, r, done, _ = env.step(action.detach().numpy())
+                s_prime, r, done, _ = env.step(action.cpu().detach().numpy())
 
                 # append new tokens
-                R = torch.cat((R, torch.tensor([R[-1] - r/scale], device=device).reshape(1, -1)))
-                s = torch.cat((s, torch.tensor((s_prime- state_mean) / state_std, dtype=dtype, device=device).reshape(1, -1)))
-                a = torch.cat((a, torch.tensor(action, dtype=dtype, device=device).reshape(1, -1)))
-                t = torch.cat((t, torch.tensor([R.shape[0]], device=device)))
+                R = torch.cat((R, torch.tensor([R[-1] - r/self.scale], device=self.device).reshape(1, -1)))
+                s = torch.cat((s, torch.tensor((s_prime- self.state_mean) / self.state_std, dtype=self.dtype, device=self.device).reshape(1, -1)))
+                a = torch.cat((a, torch.tensor(action, dtype=self.dtype, device=self.device).reshape(1, -1)))
+                t = torch.cat((t, torch.tensor([R.shape[0]], device=self.device)))
                 sum_r += r
                 length += 1
 
                 # print(s.shape)
 
                 # slice out extra tokens
-                R, s, a, t = R[-sequence_length:], s[-sequence_length:], a[-sequence_length + 1:], t[
-                                                                                                                    -sequence_length:]
-            if normalized:
+                R, s, a, t = R[-self.sequence_length:], s[-self.sequence_length:], a[-self.sequence_length + 1:], t[-self.sequence_length:]
+            if self.normalized:
                 r_per_eps[i] = env.get_normalized_score(sum_r)
             else:
                 r_per_eps[i] = sum_r
@@ -64,17 +92,17 @@ class DT_Evaluater(Evaluater):
         return r_per_eps, l_per_eps
     
 
-class BM_Evaluater(Evaluater):
+class BM_Evaluater(sql_Evaluater):
     '''
     Evaluates the model based on the author's code
     '''
-    def _evaluate(self, env, model, sequence_length = 20, n_eps = 100, target_return=3600, max_ep_len=1000, scale=1000, device='cpu', state_mean=None, state_std=None, mode='normal'):
+    def _evaluate(self, env, model, n_eps=100):
         state_dim = np.prod(env.observation_space.shape)
         action_dim = env.action_space.shape[0]
 
-        if state_mean is None:
+        if self.state_mean is None:
             state_mean = np.zeros(state_dim)
-        if state_std is None:
+        if self.state_std is None:
             state_std = np.array([1.0])
         # copied from dt experiment
         def eval_episodes(target_rew):
@@ -88,14 +116,14 @@ class BM_Evaluater(Evaluater):
                             state_dim,
                             action_dim,
                             model,
-                            max_ep_len=max_ep_len,
-                            scale=scale,
-                            target_return=target_rew/scale,
-                            mode=mode,
-                            state_mean=state_mean,
-                            state_std=state_std,
-                            device=device,
-                            sequence_length=sequence_length
+                            max_ep_len=self.max_ep_len,
+                            scale=self.scale,
+                            target_return=target_rew/self.scale,
+                            mode=self.mode,
+                            state_mean=self.state_mean,
+                            state_std=self.state_std,
+                            device=self.device,
+                            sequence_length=self.sequence_length
                         )
                         
                     returns.append(ret)
@@ -110,7 +138,7 @@ class BM_Evaluater(Evaluater):
                 # }
             return fn
         
-        eval_fn = eval_episodes(target_return)
+        eval_fn = eval_episodes(self.target_return)
         ret, len = eval_fn(model)
         self.record(ret, len)
         return ret, len

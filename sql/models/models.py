@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+import numpy as np
 # import transformers
 from transformers import GPT2Model, GPT2Config, GPT2Tokenizer
 
@@ -21,7 +22,7 @@ class LogitsNet(nn.Module):
 
 class DecisionTransformer(nn.Module):
 
-    def __init__(self, embed_dim, max_timestep, state_dim, action_dim, act_f, n_layer, n_head):
+    def __init__(self, embed_dim, max_timestep, state_dim, action_dim, act_f, n_layer, n_head, device='cuda', sequence_length=20):
         super().__init__()
         # Initializing a GPT2 configuration
         # see https: // huggingface.co / transformers / model_doc / gpt2.html  # gpt2config
@@ -42,6 +43,8 @@ class DecisionTransformer(nn.Module):
         self.state_dim = state_dim
         self.act_dim = action_dim
         self.max_length = max_timestep
+        self.device = device
+        self.sequence_length = sequence_length
         pass
 
     def forward(self, rtg, states, actions, timesteps, mask=None):
@@ -50,6 +53,8 @@ class DecisionTransformer(nn.Module):
         the dim of states
 
         Returns predicted actions of dim Z * K * X, where X is the dim of actions
+
+        # Alternatively, if Z=1, can squeeze out Z
         '''
 
         # convert timesteps to 1-hot? no, nn.embed does that automatically
@@ -64,7 +69,7 @@ class DecisionTransformer(nn.Module):
         # timesteps.reshape((-1, 1)).float()
 
         #         print('s', states)
-
+        seq_length = states.shape[1]
         batch_size = states.shape[0]
         # print(batch_size)
 
@@ -91,14 +96,20 @@ class DecisionTransformer(nn.Module):
         input_embeds = torch.stack((R_emb, s_emb, a_emb), 2).reshape((batch_size, -1, self.embed_dim))
 
 #         print('ie', input_embeds.shape)
-        # print('mask', mask)
-        # attention_mask = torch.stack((mask, mask, mask), 1).reshape((-1))
-        # print('a mask', attention_mask)
+        # print('mask', mask.sum())
+        # if mask is None:
+        #     mask = torch.ones((batch_size, seq_length), dtype=torch.long, device=self.device)
+        
+        # print('a mask', attention_mask.shape)
         # , attention_mask = attention_mask
 
         # use transformer to get hidden states from output dic
         # this should be a tensor of size Z * 3K * Y
-        hidden_states = self.GPT2(inputs_embeds=input_embeds)['last_hidden_state']
+        if mask is None:
+            hidden_states = self.GPT2(inputs_embeds=input_embeds)['last_hidden_state']
+        else:
+            attention_mask = torch.stack((mask, mask, mask), 2).reshape((batch_size, -1))
+            hidden_states = self.GPT2(inputs_embeds=input_embeds, attention_mask = attention_mask)['last_hidden_state']
 #         print('hs', hidden_states)
 #         print('hs s', hidden_states.shape)
 
@@ -112,9 +123,13 @@ class DecisionTransformer(nn.Module):
     def get_action(self, states, actions, rewards, returns_to_go, timesteps):
         '''
         Important: Make sure that rtg is in form Z * K * 1, timesteps are Z * K, and actions/states in form Z * K * X
-        If Z = 1, can ignore Z dim
-        '''
+        If Z = 1, add dummy dimension
+        # can ignore Z dim.
 
+        
+        '''
+        
+        
         # print('s', states)
         # print('s shape', states.to(torch.float).shape)
         # print('a', actions)
@@ -122,11 +137,45 @@ class DecisionTransformer(nn.Module):
         # print('rtg', returns_to_go)
         # print('rtg shape', returns_to_go.reshape(-1,1).shape)
         # print('ts shape', timesteps.shape)
-        out = self.forward(returns_to_go, states.to(torch.float), actions, timesteps)
+        one_batch = len(states.shape) < 3
+        if one_batch:
+            # add dummy dimension
+            returns_to_go = returns_to_go.unsqueeze(0)
+            states = states.unsqueeze(0)
+            actions = actions.unsqueeze(0)
+            timesteps = timesteps.unsqueeze(0)
+
+        # add padding is sequence less than default length. if longer then slice
+        returns_to_go = returns_to_go[:,-self.sequence_length:]
+        states = states[:,-self.sequence_length:]
+        actions = actions[:,-self.sequence_length:]
+        timesteps = timesteps[:,-self.sequence_length:]
+
+        tlen = states.shape[1]
+        mask = torch.cat([torch.zeros(self.sequence_length-tlen), torch.ones(tlen)]).to(dtype=torch.long, device=self.device).reshape(1, -1)
+        states = torch.cat(
+            [torch.zeros((states.shape[0], self.sequence_length-states.shape[1], self.state_dim), device=states.device), states],
+            dim=1).to(dtype=torch.float32)
+        actions = torch.cat(
+            [torch.zeros((actions.shape[0], self.sequence_length - actions.shape[1], self.act_dim),
+                            device=actions.device), actions],
+            dim=1).to(dtype=torch.float32)
+        returns_to_go = torch.cat(
+            [torch.zeros((returns_to_go.shape[0], self.sequence_length-returns_to_go.shape[1], 1), device=returns_to_go.device), returns_to_go],
+            dim=1).to(dtype=torch.float32)
+        timesteps = torch.cat(
+            [torch.zeros((timesteps.shape[0], self.sequence_length-timesteps.shape[1]), device=timesteps.device), timesteps],
+            dim=1
+        ).to(dtype=torch.long)
+        
+        # mask = torch.from_numpy(np.concatenate([np.zeros((1, self.sequence_length - tlen)), np.ones((1, tlen))], axis=1)).to(device=self.device)
+
+
+        out = self.forward(returns_to_go, states.to(torch.float), actions, timesteps, mask)
         # print(out.shape)
         # print(out)
         # print('pa', out[-1])
-        return out[-1]
+        return out[0][-1]
     
     # def get_action(self, states, actions, rewards, returns_to_go, timesteps, **kwargs):
     #     # we don't care about the past rewards in this model
