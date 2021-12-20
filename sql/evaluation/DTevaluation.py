@@ -128,14 +128,18 @@ class BM_Evaluater(sql_Evaluater):
                         
                     returns.append(ret)
                     lengths.append(length)
-                return np.array(returns), np.array(lengths)
-                # {
-                #     # f'target_{target_rew}_return_mean': np.mean(returns),
-                #     # f'target_{target_rew}_return_std': np.std(returns),
-                #     # f'target_{target_rew}_length_mean': np.mean(lengths),
-                #     # f'target_{target_rew}_length_std': np.std(lengths),
+
+                # original code prints mean and std here. our code has a wrapper that does this instead
+                print({
+                    f'target_{target_rew}_return_mean': np.mean(returns),
+                    f'target_{target_rew}_return_std': np.std(returns),
+                    f'target_{target_rew}_length_mean': np.mean(lengths),
+                    f'target_{target_rew}_length_std': np.std(lengths),
                     
-                # }
+                })
+                return np.array(returns), np.array(lengths)
+
+                
             return fn
         
         eval_fn = eval_episodes(self.target_return)

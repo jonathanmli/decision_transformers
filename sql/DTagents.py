@@ -6,6 +6,7 @@ import numpy as np
 from evaluation.DTevaluation import DT_Evaluater, BM_Evaluater
 from training.DTtrainer import DT_Trainer
 from env.dataset_prepare import prepare_experiment
+import random
 # from decision_transformer.evaluation.evaluate_episodes import *
 
 class DecisionTransformerAgent(Agent):
@@ -21,21 +22,21 @@ class DecisionTransformerAgent(Agent):
             weight_decay=0.0001, 
             warmup_steps=100000, 
             warmup_method=1, 
-            scale=1000,
-            target_return=3600, 
             grad_norm_clip=0.25, 
-            state_mean=0.0, 
-            state_std=1.0, 
-            max_ep_len=1000, 
             batch_size=256,
             env_name='hopper', 
             dataset='medium',
             mode='normal', 
-            pct_traj=1
+            pct_traj=1, 
+            seed=6
             ):
         '''
         All experimental parameters should be arguments agent here
         '''
+
+        # set seed for reproducbility
+        random.seed(seed)
+        
         # check if cuda
         self.on_cuda = torch.cuda.is_available()
         if self.on_cuda:
@@ -72,7 +73,7 @@ class DecisionTransformerAgent(Agent):
         self.dtype = torch.float
         self.itype = torch.int
         self.scale = scale
-        self.target_return = target_return
+        self.target_return = env_target
         self.device = device
         self.grad_norm_clip = grad_norm_clip
         self.state_mean = state_mean

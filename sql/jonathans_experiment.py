@@ -27,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_eval_episodes', type=int, default=100)
     parser.add_argument('--max_iters', type=int, default=10)
     parser.add_argument('--num_steps_per_iter', type=int, default=1e5)
-    parser.add_argument('--device', type=str, default='cpu')
+    parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--log_to_wandb', '-w', type=bool, default=False)
     parser.add_argument('--per_batch', type=bool, default=True)
     parser.add_argument('--warmup_method', type=int, default=1)
@@ -43,12 +43,6 @@ if __name__ == '__main__':
     env_name, dataset = variant['env'], variant['dataset']
     model_type = variant['model_type']
     mode = variant.get('mode', 'normal')
-    
-    # prepare the experiment using the dataset
-    new_batch, env, max_ep_len, scale, env_target, state_mean, state_std = prepare_experiment('gym-experiment', device=device, env_name=env_name, 
-                                                                  dataset=dataset, model_type=model_type, mode=mode, 
-                                                                  K=K, pct_traj=pct_traj)
-    
     log_to_wandb = variant.get('log_to_wandb', False)
     hidden_dim = variant['embed_dim']
     lr = variant['learning_rate']
@@ -59,37 +53,25 @@ if __name__ == '__main__':
     warmup_steps = variant['warmup_steps']
     dropout = variant['dropout']
     warmup_method = variant['warmup_method']
-    
-    # create a DT agent
-    dta = DecisionTransformerAgent(env, hidden_dim=hidden_dim, lr=lr, act_f=act_f, n_layer=n_layer,
-                                   n_head=n_head, sequence_length=K, weight_decay=weight_decay, warmup_steps=warmup_steps,
-                                   warmup_method=1, scale=scale, target_return=env_target, device=device, 
-                                   state_mean=state_mean, state_std=state_std, max_ep_len=max_ep_len)
-#     dta = DecisionTransformerAgent(env, scale=scale, target_return=env_target, warmup_steps=100, warmup_method=1, lr=0.001)
     batch_size = variant['batch_size']
     num_steps_per_iter = variant['num_steps_per_iter']
     per_batch = variant['per_batch']
-    
-    # train DT agent
-    start_time = time.time()
-    for i in range(num_steps_per_iter):
-        s, a, r, d, rtg, timesteps, mask = new_batch(batch_size)
-        dta.offline_train(s, a, r, d, rtg, timesteps, mask, per_batch=per_batch)
-        print('Batch number', i)
-    training_time = time.time()-start_time
-    print('Training time: ', training_time)
-    print('Training time per batch', training_time/num_steps_per_iter)
-    
-    
-    
     num_eval_episodes = variant['num_eval_episodes']
     
+    # create a DT agent
+    dta = DecisionTransformerAgent(env_name=env_name, hidden_dim=hidden_dim, lr=lr, act_f=act_f, n_layer=n_layer,
+                                   n_head=n_head, sequence_length=K, weight_decay=weight_decay, warmup_steps=warmup_steps,
+                                   warmup_method=1, dataset=dataset, mode=mode, batch_size=batch_size, pct_traj=pct_traj)
+   
+    
+    # train DT agent
+    print("Train")
+    dta.train(num_steps_per_iter)
+    
     # evaluate DT agent
-    start_time = time.time()
-    returns, lengths = dta.online_evaluate(num_eval_episodes)
-    print('mean return', returns.mean())
-    print('std returns', returns.std())
-    print('mean lengths', returns.mean())
-    print('std lengths', returns.std())
-    testing_time = time.time()-start_time
-    print('Testing time: ', testing_time)
+    print("BM Evaluate")
+    dta.evaluate(num_eval_episodes)
+
+    print("Evaluate")
+    dta.set_evaluater()
+    dta.evaluate(num_eval_episodes)
