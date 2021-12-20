@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 
 class Evaluater:
@@ -13,11 +14,19 @@ class Evaluater:
         self.all_lengths = np.zeros(0)
         pass
 
-    def evaluate(self, env, model, n_eps = 100):
+    def evaluate(self, env, model, **kwargs):
         '''
         Evaluates model against env
         Returns np array of returns and episode lengths
         '''
+        start_time = time.time()
+        model.eval()
+        with torch.no_grad():
+            self._evaluate(env, model, **kwargs)
+        print('evaluation time: ', time.time() - start_time)
+        pass
+
+    def _evaluate(self, env, model):
         pass
 
     def record(self, rewards, lengths):

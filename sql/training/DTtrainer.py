@@ -1,13 +1,12 @@
-from sql.training.RLtrainer import OfflineTrainer
+from training.RLtrainer import OfflineTrainer
 import torch
 
 class DT_Trainer(OfflineTrainer):
-    def __init__(self, model, batch_sampler):
-        super().__init__(model, batch_sampler)
+    # def __init__(self, model, optimizer, scheduler, batch_sampler):
+    #     super().__init__(model, optimizer, scheduler, batch_sampler,)
 
     def _train(self, n_batches):
         # train DT agent
-        self.model.train()
         for i in range(n_batches):
             s, a, r, d, rtg, timesteps, mask = self.batch_sampler(self.batch_size)
             self._train_on_batch(s, a, r, d, rtg, timesteps, mask, per_batch=self.per_batch)
@@ -15,7 +14,7 @@ class DT_Trainer(OfflineTrainer):
         
         pass
 
-    def _train_on_batch(self, states, actions, rewards, dones, rtg, timesteps, mask, per_batch=False):
+    def _train_on_batch(self, states, actions, rewards, dones, rtg, timesteps, mask, per_batch=True):
         """
         Input: tensors of states of dimension Z * K * X, where Z is number of trajectories (batch size), K is trajectory
                 length, and X is the dimension of the states

@@ -1,20 +1,55 @@
-from sql.RLagents import Agent
+from RLagents import Agent
 from torch.optim import AdamW
-from sql.models.models import *
+from models.models import *
 import torch
 import numpy as np
-from sql.evaluation.DTevaluation import DT_Evaluater, BM_Evaluater
-from sql.training.DTtrainer import DT_Trainer
+from evaluation.DTevaluation import DT_Evaluater, BM_Evaluater
+from training.DTtrainer import DT_Trainer
+from jonathans_experiment import prepare_experiment
 # from decision_transformer.evaluation.evaluate_episodes import *
 
 class DecisionTransformerAgent(Agent):
-    def __init__(self, env, gamma=1, hidden_dim=128, lr=0.0001, alpha=1, act_f='relu', n_layer=3,
-                 n_head=1, sequence_length=20, weight_decay=0.0001, warmup_steps=100000, warmup_method=1, scale=1000,
-                 target_return=3600, device='cpu', grad_norm_clip=0.25, state_mean=0.0, state_std=1.0, max_ep_len=1000):
+    def __init__(self, 
+            gamma=1, 
+            hidden_dim=128, 
+            lr=0.0001, 
+            alpha=1, 
+            act_f='relu', 
+            n_layer=3,
+            n_head=1, 
+            sequence_length=20, 
+            weight_decay=0.0001, 
+            warmup_steps=100000, 
+            warmup_method=1, 
+            scale=1000,
+            target_return=3600, 
+            grad_norm_clip=0.25, 
+            state_mean=0.0, 
+            state_std=1.0, 
+            max_ep_len=1000, 
+            batch_size=256,
+            env_name='hopper', 
+            dataset='medium',
+            mode='normal', 
+            pct_traj=1
+            ):
+        '''
+        All experimental parameters should be arguments agent here
+        '''
+        # get variables from dataset
+        batch_sampler, env, max_ep_len, scale, env_target, state_mean, state_std = prepare_experiment('gym-experiment', device=self.device, env_name=env_name, dataset=dataset, mode=mode, K=sequence_length, pct_traj=pct_traj)
+
         Agent.__init__(self, env)
+
+        self.on_cuda = torch.cuda.is_available()
 
         # attach model
         self.model = DecisionTransformer(hidden_dim, 5000, self.state_dim, self.action_dim, act_f, n_layer, n_head)
+        if self.on_cuda:
+            self.model=self.model.cuda()
+            device = 'cuda'
+        else:
+            device = 'cpu'
 
         # attach optimizer. Paper mentions they used AdamW with LR of 0.001
         self.optimizer = AdamW(self.model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -40,8 +75,11 @@ class DecisionTransformerAgent(Agent):
         self.state_std = state_std
         self.max_ep_len = max_ep_len
 
+        # attach sampler
+        self.batch_sampler = batch_sampler
+
         # attach trainer
-        self.trainer = DT_Trainer(self.model, None)
+        self.trainer = DT_Trainer(self.model, self.optimizer, self.scheduler, batch_sampler, batch_size=batch_size, grad_norm_clip=grad_norm_clip)
 
         # attach evaluater
         self.evaluater = BM_Evaluater()
@@ -49,10 +87,9 @@ class DecisionTransformerAgent(Agent):
 
     def train(self, n_batches):
         self.trainer.train(n_batches)
-        pass
 
     def evaluate(self, episodes=100, normalized=False, **kwargs):
-        self.evaluater.evaluate(self.model)
+        self.evaluater.evaluate(self.env, self.model)
         self.evaluater.print_summary()
         
     
