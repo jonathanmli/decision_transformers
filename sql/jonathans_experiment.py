@@ -5,6 +5,15 @@ import argparse
 import sys
 from DTagents import *
 import time
+import random
+import torch
+
+
+# set seed for reproducbility
+SEED = 6
+random.seed(SEED)
+torch.manual_seed(SEED)
+np.random.seed(SEED)
 
 
 if __name__ == '__main__':
@@ -62,7 +71,9 @@ if __name__ == '__main__':
     dta = DecisionTransformerAgent(env_name=env_name, hidden_dim=hidden_dim, lr=lr, act_f=act_f, n_layer=n_layer,
                                    n_head=n_head, sequence_length=K, weight_decay=weight_decay, warmup_steps=warmup_steps,
                                    warmup_method=1, dataset=dataset, mode=mode, batch_size=batch_size, pct_traj=pct_traj)
-   
+    
+    # titles
+    print(f"JJ DT Experiment with {num_steps_per_iter} training steps, {lr} learning rate, and {warmup_steps} warmup steps")
     
     # train DT agent
     print("Train")

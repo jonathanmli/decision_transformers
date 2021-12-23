@@ -6,7 +6,7 @@ class sql_Evaluater(Evaluater):
     def __init__(self, 
             dtype=torch.float, 
             itype=torch.int, 
-            normalized=False, 
+            normalized=True, 
             sequence_length = 20, 
             target_return=3600, 
             max_ep_len=1000, 
@@ -78,7 +78,7 @@ class DT_Evaluater(sql_Evaluater):
                 # slice out extra tokens
                 R, s, a, t = R[-self.sequence_length:], s[-self.sequence_length:], a[-self.sequence_length + 1:], t[-self.sequence_length:]
             if self.normalized:
-                r_per_eps[i] = env.get_normalized_score(sum_r)
+                r_per_eps[i] = 100*env.get_normalized_score(sum_r)
             else:
                 r_per_eps[i] = sum_r
 

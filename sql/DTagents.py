@@ -6,7 +6,7 @@ import numpy as np
 from evaluation.DTevaluation import DT_Evaluater, BM_Evaluater
 from training.DTtrainer import DT_Trainer
 from env.dataset_prepare import prepare_experiment
-import random
+
 # from decision_transformer.evaluation.evaluate_episodes import *
 
 class DecisionTransformerAgent(Agent):
@@ -27,15 +27,13 @@ class DecisionTransformerAgent(Agent):
             env_name='hopper', 
             dataset='medium',
             mode='normal', 
-            pct_traj=1, 
-            seed=6
+            pct_traj=1
             ):
         '''
         All experimental parameters should be arguments agent here
         '''
 
-        # set seed for reproducbility
-        random.seed(seed)
+      
         
         # check if cuda
         self.on_cuda = torch.cuda.is_available()
