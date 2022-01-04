@@ -13,7 +13,7 @@ np.random.seed(SEED)
 # %%
 # make the experiment environment and dt agent
 # new_batch, env, max_ep_len, scale, env_target, state_mean, state_std = prepare_experiment('gym-experiment', device='cuda')
-dta = DecisionTransformerAgent(lr=0.001, warmup_steps=100, env_name='halfcheetah')
+dta = DecisionTransformerAgent(lr=0.001, warmup_steps=100, env_name='hopper')
 
 # %%
 print("Train")

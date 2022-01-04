@@ -27,13 +27,14 @@ class DecisionTransformerAgent(Agent):
             env_name='hopper', 
             dataset='medium',
             mode='normal', 
-            pct_traj=1
+            pct_traj=1,
+            seed = 6
             ):
         '''
         All experimental parameters should be arguments agent here
         '''
 
-      
+        self.seed = seed
         
         # check if cuda
         self.on_cuda = torch.cuda.is_available()
@@ -95,6 +96,7 @@ class DecisionTransformerAgent(Agent):
     def evaluate(self, episodes=100, normalized=False, **kwargs):
         self.evaluater.evaluate(self.env, self.model)
         self.evaluater.print_summary()
+        print(f'{self.evaluater.all_rewards.mean()},{self.evaluater.all_rewards.std()},{self.evaluater.all_lengths.mean()},{self.evaluater.all_lengths.std()},{self.seed}')
     
     def set_evaluater(self, evaluater=DT_Evaluater):
         self.evaluater = evaluater(dtype=self.dtype, itype=self.itype, sequence_length=self.sequence_length, target_return=self.target_return, max_ep_len=self.max_ep_len, scale=self.scale, device=self.device, state_mean=self.state_mean, state_std=self.state_std, mode=self.mode)

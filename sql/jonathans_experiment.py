@@ -9,12 +9,24 @@ import random
 import torch
 
 
-# set seed for reproducbility
-SEED = 6
-random.seed(SEED)
-torch.manual_seed(SEED)
-np.random.seed(SEED)
 
+def init_seed(seed, reproducibility):
+    r""" init random seed for random functions in numpy, torch, cuda and cudnn
+    Args:
+        seed (int): random seed
+        reproducibility (bool): Whether to require reproducibility
+    """
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    if reproducibility:
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+    else:
+        torch.backends.cudnn.benchmark = True
+        torch.backends.cudnn.deterministic = False
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -34,12 +46,18 @@ if __name__ == '__main__':
     parser.add_argument('--weight_decay', '-wd', type=float, default=1e-4)
     parser.add_argument('--warmup_steps', type=int, default=1e5)
     parser.add_argument('--num_eval_episodes', type=int, default=100)
-    parser.add_argument('--max_iters', type=int, default=10)
+    parser.add_argument('--max_iters', type=int, default=1)
     parser.add_argument('--num_steps_per_iter', type=int, default=1e5)
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--log_to_wandb', '-w', type=bool, default=False)
     parser.add_argument('--per_batch', type=bool, default=True)
     parser.add_argument('--warmup_method', type=int, default=1)
+    parser.add_argument('--seed', type=int, default=6)
+
+
+    
+
+    
 
     args = parser.parse_args()
     variant = vars(args)
@@ -47,6 +65,7 @@ if __name__ == '__main__':
     
 
     device = variant.get('device', 'cpu')
+    seed = variant['seed']
     K = variant['K']
     pct_traj = variant.get('pct_traj', 1.)
     env_name, dataset = variant['env'], variant['dataset']
@@ -66,23 +85,33 @@ if __name__ == '__main__':
     num_steps_per_iter = variant['num_steps_per_iter']
     per_batch = variant['per_batch']
     num_eval_episodes = variant['num_eval_episodes']
-    
-    # create a DT agent
-    dta = DecisionTransformerAgent(env_name=env_name, hidden_dim=hidden_dim, lr=lr, act_f=act_f, n_layer=n_layer,
-                                   n_head=n_head, sequence_length=K, weight_decay=weight_decay, warmup_steps=warmup_steps,
-                                   warmup_method=1, dataset=dataset, mode=mode, batch_size=batch_size, pct_traj=pct_traj)
-    
-    # titles
-    print(f"JJ DT Experiment with {num_steps_per_iter} training steps, {lr} learning rate, and {warmup_steps} warmup steps")
-    
-    # train DT agent
-    print("Train")
-    dta.train(num_steps_per_iter)
-    
-    # evaluate DT agent
-    print("BM Evaluate")
-    dta.evaluate(num_eval_episodes)
+    max_iters = variant['max_iters']
 
-    print("Evaluate")
-    dta.set_evaluater()
-    dta.evaluate(num_eval_episodes)
+    print(f"JJ DT Experiment with {num_steps_per_iter} training steps, {lr} learning rate, {warmup_steps} warmup steps, and start seed {seed}")
+
+    for i in range(seed, seed+max_iters):
+
+        # set seed for reproducbility
+        init_seed(i, True)
+        
+        # create a DT agent
+        dta = DecisionTransformerAgent(env_name=env_name, hidden_dim=hidden_dim, lr=lr, act_f=act_f, n_layer=n_layer,
+                                    n_head=n_head, sequence_length=K, weight_decay=weight_decay, warmup_steps=warmup_steps,
+                                    warmup_method=1, dataset=dataset, mode=mode, batch_size=batch_size, pct_traj=pct_traj, seed=seed)
+        
+        # titles
+        print('==================================================')
+        print(f'Iteration with seed {i}')
+        
+        
+        # train DT agent
+        print("Train")
+        dta.train(num_steps_per_iter)
+        
+        # evaluate DT agent
+        print("BM Evaluate")
+        dta.evaluate(num_eval_episodes)
+
+        print("Evaluate")
+        dta.set_evaluater()
+        dta.evaluate(num_eval_episodes)

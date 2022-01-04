@@ -88,6 +88,7 @@ class DT_Evaluater(sql_Evaluater):
         # print('std returns', r_per_eps.std())
         # print('mean lengths', l_per_eps.mean())
         # print('std lengths', l_per_eps.std())
+        # print(env.get_normalized_score())
         self.record(r_per_eps, l_per_eps)
         return r_per_eps, l_per_eps
     

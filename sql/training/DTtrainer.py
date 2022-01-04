@@ -10,7 +10,7 @@ class DT_Trainer(OfflineTrainer):
         for i in range(n_batches):
             s, a, r, d, rtg, timesteps, mask = self.batch_sampler(self.batch_size)
             self._train_on_batch(s, a, r, d, rtg, timesteps, mask, per_batch=self.per_batch)
-            print('Batch number', i)
+            # print('Batch number', i)
         
         pass
 

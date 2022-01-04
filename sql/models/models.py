@@ -2,7 +2,8 @@ import torch.nn as nn
 import torch
 import numpy as np
 # import transformers
-from transformers import GPT2Model, GPT2Config, GPT2Tokenizer
+from transformers import GPT2Config
+from models.trajectory_gpt2 import GPT2Model
 
 # neural network output odds for different actions, approximates policy
 class LogitsNet(nn.Module):
