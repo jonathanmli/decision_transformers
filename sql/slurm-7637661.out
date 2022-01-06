@@ -1,0 +1,147 @@
+Warning: Flow failed to import. Set the environment variable D4RL_SUPPRESS_IMPORT_ERROR=1 to suppress this message.
+No module named 'flow'
+INFO:absl:MUJOCO_GL is not set, so an OpenGL backend will be chosen automatically.
+/home-nfs/doctorduality/mc3/envs/ml2/lib/python3.9/site-packages/glfw/__init__.py:906: GLFWError: (65544) b'X11: The DISPLAY environment variable is missing'
+  warnings.warn(message, GLFWError)
+INFO:absl:Successfully imported OpenGL backend: glfw
+INFO:absl:MuJoCo library version is: 210
+Warning: CARLA failed to import. Set the environment variable D4RL_SUPPRESS_IMPORT_ERROR=1 to suppress this message.
+No module named 'carla'
+pybullet build time: Dec  1 2021 18:34:28
+/home-nfs/doctorduality/mc3/envs/ml2/lib/python3.9/site-packages/gym/spaces/box.py:73: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
+  logger.warn(
+/share/data/mei-work/jolly/decision_transformers/sql/evaluation/DTevaluation.py:52: UserWarning: Creating a tensor from a list of numpy.ndarrays is extremely slow. Please consider converting the list to a single numpy.ndarray with numpy.array() before converting to a tensor. (Triggered internally at  /opt/conda/conda-bld/pytorch_1639180487213/work/torch/csrc/utils/tensor_new.cpp:201.)
+  s = torch.tensor([env.reset()], dtype=self.dtype, device=self.device)
+/share/data/mei-work/jolly/decision_transformers/sql/evaluation/DTevaluation.py:71: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  a = torch.cat((a, torch.tensor(action, dtype=self.dtype, device=self.device).reshape(1, -1)))
+JJ DT Experiment with 10000 training steps, 0.0001 learning rate, 10000 warmup steps, and start seed 1
+==================================================
+Starting new experiment: halfcheetah medium-replay
+202 trajectories, 202000 timesteps found
+Average return: 3093.29, std: 1680.69
+Max return: 4985.14, min: -638.49
+==================================================
+==================================================
+Iteration with seed 1
+Train
+Training time:  1729.6821784973145
+Training time per batch:  0.17296821784973143
+BM Evaluate
+{'target_6000_return_mean': 3529.7777886723734, 'target_6000_return_std': 1273.504668767933, 'target_6000_length_mean': 1000.0, 'target_6000_length_std': 0.0}
+evaluation time:  376.1922941207886
+mean return 3529.7777886723734
+std returns 1273.504668767933
+mean lengths 1000.0
+std lengths 0.0
+3529.7777886723734,1273.504668767933,1000.0,0.0,1
+Evaluate
+evaluation time:  378.01406621932983
+mean return 28.420135757229676
+std returns 11.470317954415965
+mean lengths 1000.0
+std lengths 0.0
+28.420135757229676,11.470317954415965,1000.0,0.0,1
+==================================================
+Starting new experiment: halfcheetah medium-replay
+202 trajectories, 202000 timesteps found
+Average return: 3093.29, std: 1680.69
+Max return: 4985.14, min: -638.49
+==================================================
+==================================================
+Iteration with seed 2
+Train
+Training time:  1691.6212763786316
+Training time per batch:  0.16916212763786315
+BM Evaluate
+{'target_6000_return_mean': 3923.7818313893326, 'target_6000_return_std': 766.7656012680558, 'target_6000_length_mean': 1000.0, 'target_6000_length_std': 0.0}
+evaluation time:  384.1713728904724
+mean return 3923.7818313893326
+std returns 766.7656012680558
+mean lengths 1000.0
+std lengths 0.0
+3923.7818313893326,766.7656012680558,1000.0,0.0,1
+Evaluate
+evaluation time:  384.0412266254425
+mean return 24.168536513270347
+std returns 0.5477416852170645
+mean lengths 1000.0
+std lengths 0.0
+24.168536513270347,0.5477416852170645,1000.0,0.0,1
+==================================================
+Starting new experiment: halfcheetah medium-replay
+202 trajectories, 202000 timesteps found
+Average return: 3093.29, std: 1680.69
+Max return: 4985.14, min: -638.49
+==================================================
+==================================================
+Iteration with seed 3
+Train
+Training time:  1719.651395559311
+Training time per batch:  0.1719651395559311
+BM Evaluate
+{'target_6000_return_mean': 3304.8688607287436, 'target_6000_return_std': 1084.6518719449275, 'target_6000_length_mean': 1000.0, 'target_6000_length_std': 0.0}
+evaluation time:  381.0948631763458
+mean return 3304.8688607287436
+std returns 1084.6518719449275
+mean lengths 1000.0
+std lengths 0.0
+3304.8688607287436,1084.6518719449275,1000.0,0.0,1
+Evaluate
+evaluation time:  384.53865337371826
+mean return 24.6537347833264
+std returns 6.715989397863791
+mean lengths 1000.0
+std lengths 0.0
+24.6537347833264,6.715989397863791,1000.0,0.0,1
+==================================================
+Starting new experiment: halfcheetah medium-replay
+202 trajectories, 202000 timesteps found
+Average return: 3093.29, std: 1680.69
+Max return: 4985.14, min: -638.49
+==================================================
+==================================================
+Iteration with seed 4
+Train
+Training time:  1856.8140766620636
+Training time per batch:  0.18568140766620636
+BM Evaluate
+{'target_6000_return_mean': 3543.1230696780217, 'target_6000_return_std': 1279.281171436911, 'target_6000_length_mean': 1000.0, 'target_6000_length_std': 0.0}
+evaluation time:  411.19189262390137
+mean return 3543.1230696780217
+std returns 1279.281171436911
+mean lengths 1000.0
+std lengths 0.0
+3543.1230696780217,1279.281171436911,1000.0,0.0,1
+Evaluate
+evaluation time:  462.62638449668884
+mean return 33.672150723303055
+std returns 7.818190116178215
+mean lengths 1000.0
+std lengths 0.0
+33.672150723303055,7.818190116178215,1000.0,0.0,1
+==================================================
+Starting new experiment: halfcheetah medium-replay
+202 trajectories, 202000 timesteps found
+Average return: 3093.29, std: 1680.69
+Max return: 4985.14, min: -638.49
+==================================================
+==================================================
+Iteration with seed 5
+Train
+Training time:  1883.171540260315
+Training time per batch:  0.1883171540260315
+BM Evaluate
+{'target_6000_return_mean': 2783.4744550678715, 'target_6000_return_std': 1594.4929525034136, 'target_6000_length_mean': 1000.0, 'target_6000_length_std': 0.0}
+evaluation time:  408.0891308784485
+mean return 2783.4744550678715
+std returns 1594.4929525034136
+mean lengths 1000.0
+std lengths 0.0
+2783.4744550678715,1594.4929525034136,1000.0,0.0,1
+Evaluate
+evaluation time:  398.255264043808
+mean return 35.10746956299448
+std returns 4.002068895656501
+mean lengths 1000.0
+std lengths 0.0
+35.10746956299448,4.002068895656501,1000.0,0.0,1

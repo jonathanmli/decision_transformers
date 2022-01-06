@@ -27,10 +27,22 @@ class DT_Trainer(OfflineTrainer):
         """
         if per_batch:
             a_preds = self.model(rtg[:, :-1], states, actions, timesteps, mask)
+            a_target = torch.clone(actions)
+
+            # print(mask.shape)
+            # print(a_target.shape)
+            # print(a_preds.shape)
+
+            # apply masking
+            a_preds = a_preds[mask > 0]
+            a_target = a_target[mask > 0]
+
+            # print(a_target.shape)
+            # print(a_preds.shape)
 
             # this loss is weird -- why r we taking diff in actions?
-            loss = torch.mean((a_preds - actions) ** 2)
-#             print(loss)
+            loss = torch.mean((a_preds - a_target) ** 2)
+            print(loss)
             self.optimizer.zero_grad()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_norm_clip)

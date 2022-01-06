@@ -17,7 +17,7 @@ dta = DecisionTransformerAgent(lr=0.001, warmup_steps=100, env_name='hopper')
 
 # %%
 print("Train")
-dta.train(10)
+dta.train(100)
 
 # %%
 print("BM Evaluate")
