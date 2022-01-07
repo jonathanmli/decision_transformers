@@ -12,6 +12,9 @@ from torch.distributions.categorical import Categorical
 from gym.spaces import Discrete, Box
 # from util import *
 
+class Configuration:
+    def __init__(self, **kwargs) -> None:
+        self.__dict__.update(kwargs)
 
 class Agent:
     '''

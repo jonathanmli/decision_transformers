@@ -1,0 +1,4 @@
+,target_3600_return_mean,target_3600_return_std,target_3600_length_mean,target_3600_length_std,act_f,alpha,batch_size,dataset,env_name,env_target,evaluater,gamma,grad_norm_clip,hidden_dim,length_mean,length_std,lr,max_ep_len,mode,model,n_eval_episodes,n_head,n_layer,pct_traj,return_mean,return_std,scale,seed,sequence_length,training_steps,warmup_method,warmup_steps,weight_decay
+0,1293.4330171369172,81.36443074462353,416.65,20.479440910337374,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+1,1655.2434327741141,116.02625950595089,525.32,32.887955242003116,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2,,,,,relu,1.0,64.0,medium,hopper,3600.0,BM_Evaluater,1.0,0.25,128.0,454.35,24.978540790046164,0.0001,1000.0,normal,BM,100.0,1.0,3.0,1.0,1441.0703073681916,94.05537245478726,1000.0,1.0,20.0,10000.0,1.0,10000.0,0.0001

@@ -109,6 +109,7 @@ class BM_Evaluater(sql_Evaluater):
         def eval_episodes(target_rew):
             def fn(model):
                 returns, lengths = [], []
+                # j = 0
                 for _ in range(n_eps):
                     with torch.no_grad():
                         # print(max_ep_len)
@@ -129,15 +130,17 @@ class BM_Evaluater(sql_Evaluater):
                         
                     returns.append(ret)
                     lengths.append(length)
-
-                # original code prints mean and std here. our code has a wrapper that does this instead
-                print({
-                    f'target_{target_rew}_return_mean': np.mean(returns),
-                    f'target_{target_rew}_return_std': np.std(returns),
-                    f'target_{target_rew}_length_mean': np.mean(lengths),
-                    f'target_{target_rew}_length_std': np.std(lengths),
+                    # print(j)
+                    # j+=1
                     
-                })
+                # original code prints mean and std here. our code has a wrapper that does this instead
+                # print({
+                #     f'target_{target_rew}_return_mean': np.mean(returns),
+                #     f'target_{target_rew}_return_std': np.std(returns),
+                #     f'target_{target_rew}_length_mean': np.mean(lengths),
+                #     f'target_{target_rew}_length_std': np.std(lengths),
+                    
+                # })
                 return np.array(returns), np.array(lengths)
 
                 

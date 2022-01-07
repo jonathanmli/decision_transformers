@@ -1,0 +1,42 @@
+Warning: Flow failed to import. Set the environment variable D4RL_SUPPRESS_IMPORT_ERROR=1 to suppress this message.
+No module named 'flow'
+INFO:absl:MUJOCO_GL is not set, so an OpenGL backend will be chosen automatically.
+/home-nfs/doctorduality/mc3/envs/ml2/lib/python3.9/site-packages/glfw/__init__.py:906: GLFWError: (65544) b'X11: The DISPLAY environment variable is missing'
+  warnings.warn(message, GLFWError)
+INFO:absl:Successfully imported OpenGL backend: glfw
+INFO:absl:MuJoCo library version is: 210
+Warning: CARLA failed to import. Set the environment variable D4RL_SUPPRESS_IMPORT_ERROR=1 to suppress this message.
+No module named 'carla'
+pybullet build time: Dec  1 2021 18:34:28
+/home-nfs/doctorduality/mc3/envs/ml2/lib/python3.9/site-packages/gym/spaces/box.py:73: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
+  logger.warn(
+/share/data/mei-work/jolly/decision_transformers/sql/evaluation/DTevaluation.py:52: UserWarning: Creating a tensor from a list of numpy.ndarrays is extremely slow. Please consider converting the list to a single numpy.ndarray with numpy.array() before converting to a tensor. (Triggered internally at  /opt/conda/conda-bld/pytorch_1639180487213/work/torch/csrc/utils/tensor_new.cpp:201.)
+  s = torch.tensor([env.reset()], dtype=self.dtype, device=self.device)
+/share/data/mei-work/jolly/decision_transformers/sql/evaluation/DTevaluation.py:71: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  a = torch.cat((a, torch.tensor(action, dtype=self.dtype, device=self.device).reshape(1, -1)))
+JJ DT Experiment with 10000 training steps, 0.0001 learning rate, 10000 warmup steps, and start seed 3
+==================================================
+Starting new experiment: walker2d medium-replay
+1093 trajectories, 302000 timesteps found
+Average return: 682.70, std: 895.96
+Max return: 4132.00, min: -50.20
+==================================================
+==================================================
+Iteration with seed 3
+Train
+Training time:  934.0849072933197
+Training time per batch:  0.09340849072933197
+BM Evaluate
+evaluation time:  281.7975959777832
+mean return 1266.5932720331084
+std returns 972.8354869705286
+mean lengths 631.99
+std lengths 341.84960128688164
+{'gamma': 1, 'hidden_dim': 128, 'lr': 0.0001, 'alpha': 1, 'act_f': 'relu', 'n_layer': 3, 'n_head': 1, 'sequence_length': 20, 'weight_decay': 0.0001, 'warmup_method': 1, 'warmup_steps': 10000, 'grad_norm_clip': 0.25, 'batch_size': 64, 'env_name': 'walker2d', 'dataset': 'medium-replay', 'mode': 'normal', 'pct_traj': 1.0, 'seed': 3, 'n_eval_episodes': 100, 'training_steps': 10000, 'max_ep_len': 1000, 'scale': 1000.0, 'env_target': 5000, 'return_mean': 1266.5932720331084, 'return_std': 972.8354869705286, 'length_mean': 631.99, 'length_std': 341.84960128688164, 'model': 'BM', 'evaluater': 'BM_Evaluater'}
+Evaluate
+evaluation time:  56.29220724105835
+mean return 5.508311580152842
+std returns 0.24779827594251325
+mean lengths 125.33
+std lengths 4.656296811845224
+{'gamma': 1, 'hidden_dim': 128, 'lr': 0.0001, 'alpha': 1, 'act_f': 'relu', 'n_layer': 3, 'n_head': 1, 'sequence_length': 20, 'weight_decay': 0.0001, 'warmup_method': 1, 'warmup_steps': 10000, 'grad_norm_clip': 0.25, 'batch_size': 64, 'env_name': 'walker2d', 'dataset': 'medium-replay', 'mode': 'normal', 'pct_traj': 1.0, 'seed': 3, 'n_eval_episodes': 100, 'training_steps': 10000, 'max_ep_len': 1000, 'scale': 1000.0, 'env_target': 5000, 'return_mean': 5.508311580152842, 'return_std': 0.24779827594251325, 'length_mean': 125.33, 'length_std': 4.656296811845224, 'model': 'BM', 'evaluater': 'DT_Evaluater'}

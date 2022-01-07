@@ -95,10 +95,11 @@ if __name__ == '__main__':
         init_seed(i, True)
         
         # create a DT agent
-        dta = DecisionTransformerAgent(env_name=env_name, hidden_dim=hidden_dim, lr=lr, act_f=act_f, n_layer=n_layer,
+        dtc = DTConfiguration(env_name=env_name, hidden_dim=hidden_dim, lr=lr, act_f=act_f, n_layer=n_layer,
                                     n_head=n_head, sequence_length=K, weight_decay=weight_decay, warmup_steps=warmup_steps,
-                                    warmup_method=1, dataset=dataset, mode=mode, batch_size=batch_size, pct_traj=pct_traj, seed=seed)
-        
+                                    warmup_method=1, dataset=dataset, mode=mode, batch_size=batch_size, pct_traj=pct_traj, seed=seed, 
+                                    n_eval_episodes=num_eval_episodes, training_steps=num_steps_per_iter)
+        dta = DecisionTransformerAgent(dtc)
         # titles
         print('==================================================')
         print(f'Iteration with seed {i}')

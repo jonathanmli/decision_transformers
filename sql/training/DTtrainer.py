@@ -42,7 +42,7 @@ class DT_Trainer(OfflineTrainer):
 
             # this loss is weird -- why r we taking diff in actions?
             loss = torch.mean((a_preds - a_target) ** 2)
-            print(loss)
+            # print(loss)
             self.optimizer.zero_grad()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_norm_clip)

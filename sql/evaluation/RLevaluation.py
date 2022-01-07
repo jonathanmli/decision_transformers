@@ -38,9 +38,9 @@ class Evaluater:
         print('std returns', self.all_rewards.std())
         print('mean lengths', self.all_lengths.mean())
         print('std lengths', self.all_lengths.std())
-        
-        
-        
+
+    def __str__(self):
+        return self.__class__.__name__
 
     def plot_rewards(self, window=50, only_mean=False, label='rewards'):
         if not only_mean:
